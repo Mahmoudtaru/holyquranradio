@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إذاعة القرآن الكريم</title>
+    <!-- Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cairo --><link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons --><script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <!-- React and ReactDOM --><script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- Babel for JSX transpilation --><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script>
+        // Set theme on initial load
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark')
+        } else {
+          document.documentElement.classList.remove('dark')
+        }
+    </script>
+
+    <style>
+        :root {
+            /* Colors derived from Smarter Mood logo */
+            --sm-green: #6AA84F; /* Light green from bulb top */
+            --sm-blue: #2A406B; /* Dark blue from bulb bottom and text */
+            --sm-cream: #F5F3ED; /* Background color of the logo */
+
+            /* Mapped to our app theme */
+            --bg-light: var(--sm-cream);
+            --primary-light: #FFFFFF; /* Pure white for cards in light mode */
+            --text-dark: var(--sm-blue); /* Main text color in light mode */
+            
+            --accent-primary: var(--sm-blue); /* Dark blue for accents */
+            --accent-secondary: var(--sm-green); /* Light green for secondary accents */
+
+            /* Dark mode colors - adjusted for contrast */
+            --bg-dark: #1A202C; /* Deep, cool dark blue */
+            --primary-dark: #2D3748; /* Lighter, complementary dark blue/grey */
+            --text-light: #F7FAFC; /* Brighter off-white for better readability */
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            scroll-behavior: smooth;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+        }
+        
+        .dark body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .animate-fadeIn { animation: fadeIn 1s ease-in-out forwards; }
+        .animate-fadeInUp { animation: fadeInUp 0.8s ease-in-out forwards; }
+        
+        .tab-content-anim {
+             animation: fadeInUp 0.5s ease-in-out;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                transform: scale(1.02);
+                box-shadow: 0 0 8px var(--accent-primary), 0 0 12px var(--accent-secondary);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 16px var(--accent-primary), 0 0 24px var(--accent-secondary);
+            }
+        }
+        .pulse-animate {
+            animation: pulse-glow 2.2s infinite ease-in-out;
+        }
+
+        @keyframes blink-caret {
+          from, to { border-color: transparent }
+          50% { border-color: var(--accent-secondary); } /* Use secondary accent for blink */
+        }
+        
+        .typewriter-anim {
+            overflow: hidden; white-space: nowrap; margin: 0 auto; letter-spacing: .05em;
+            display: inline-block; vertical-align: top;
+            animation: blink-caret .75s step-end infinite;
+        }
+        .typewriter-ltr { border-right: .15em solid var(--accent-secondary); }
+        .typewriter-rtl { border-left: .15em solid var(--accent-secondary); }
+
+        .content-card {
+            background-color: var(--primary-light);
+            border-top: 4px solid var(--accent-primary);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            color: var(--text-dark); /* Ensure text inside is always dark */
+        }
+        .content-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(42, 64, 107, 0.1), 0 4px 6px -2px rgba(42, 64, 107, 0.05); /* Blue shadow */
+        }
+        .dark .content-card {
+            background-color: var(--primary-light); /* Force light background in dark mode */
+            border-color: var(--accent-secondary); /* Keep accent border for dark mode */
+        }
+        .dark .content-card:hover {
+             box-shadow: 0 10px 15px -3px rgba(106, 168, 79, 0.1), 0 4px 6px -2px rgba(106, 168, 79, 0.07); /* Green shadow */
+        }
+
+        .page-title {
+            color: var(--accent-primary);
+        }
+        .dark .page-title, .dark .content-card .page-title {
+            color: var(--accent-primary);
+        }
+
+        .section-header {
+             color: var(--accent-primary);
+        }
+        .dark .section-header, .dark .content-card .section-header {
+             color: var(--accent-primary);
+        }
+
+        .bottom-nav-active { 
+            color: #ffffff; 
+            transform: scale(1.1); 
+        }
+        .bottom-nav-active > span { font-weight: 700; }
+    </style>
+</head>
+<body class="bg-bg-light dark:bg-bg-dark text-text-dark dark:text-text-light transition-colors duration-300">
+    
+    <!-- Welcome Screen -->
+    <div id="welcome-screen" class="fixed inset-0 flex flex-col justify-center items-center z-50 transition-opacity duration-700" style="background-color: var(--sm-blue);">
+        <div class="w-full flex flex-col items-center text-center p-4">
+            <img 
+                src="https://i.postimg.cc/7Y9f8FCC/Chat-GPT-Image-Oct-21-2025-05-47-16-PM.png" 
+                alt="شعار إذاعة القرآن الكريم" 
+                class="w-40 h-40 mx-auto mb-6 animate-fadeIn rounded-full" 
+                style="animation-delay: 0.5s;"
+            >
+            <h1 id="welcome-title" dir="rtl" class="text-4xl sm:text-5xl font-bold mb-4 min-h-[56px] sm:min-h-[60px]" style="color: var(--sm-cream);"></h1>
+            <p id="welcome-subtitle" class="text-lg sm:text-xl mt-2 min-h-[40px] sm:min-h-[44px]" style="color: var(--sm-green);"></p>
+            <button id="start-btn" class="mt-12 font-bold py-3 px-10 rounded-lg text-xl transition-all transform opacity-0" style="background-image: linear-gradient(to right, var(--sm-green), var(--sm-blue)); color: var(--sm-cream); border: 1px solid rgba(245, 243, 237, 0.2);">
+                ابدأ الآن
+            </button>
+        </div>
+    </div>
+
+    <!-- React App Root --><div id="root" class="hidden"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useRef } = React;
+        const STREAM_URL = 'https://n13.radiojar.com/8s5u5tpdtwzuv?rj-ttl=5&rj-tok=AAABk6shqpUAmERj_dQaKuFSRw'; // رابط بث حديث
+
+        // --- Components ---
+
+        // Icon.tsx
+        const Icon = ({ name, className, style }) => {
+            const wrapperRef = useRef(null);
+            useEffect(() => {
+                if (wrapperRef.current && window.lucide) {
+                    const i = document.createElement('i');
+                    i.setAttribute('data-lucide', name);
+                    wrapperRef.current.innerHTML = ''; 
+                    wrapperRef.current.appendChild(i);
+                    window.lucide.createIcons({ nodes: [i] });
+                    const svg = wrapperRef.current.querySelector('svg');
+                    if (svg) {
+                        if (className) {
+                            className.split(' ').forEach(cls => { if (cls) svg.classList.add(cls); });
+                        }
+                        if (style) {
+                            Object.assign(svg.style, style);
+                        }
+                    }
+                }
+            }, [name, className, style]);
+            return <span ref={wrapperRef} />;
+        };
+
+        // Header.tsx
+        const Header = ({ theme, onThemeToggle }) => {
+            return (
+                <header 
+                    className="p-4 shadow-lg flex justify-between items-center sticky top-0 z-40"
+                    style={{ backgroundImage: 'linear-gradient(to right, var(--accent-secondary), var(--accent-primary))' }}
+                >
+                    <div className="text-center flex-grow">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-wider" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.2)' }}>
+                            إذاعة القرآن الكريم
+                        </h1>
+                    </div>
+                    <button id="theme-toggle" onClick={onThemeToggle} className="p-2 rounded-full text-white hover:bg-white/20 transition-colors">
+                        <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
+                    </button>
+                </header>
+            );
+        };
+
+        // BottomNav.tsx
+        const NavButton = ({ tabId, icon, label, activeTab, onClick }) => {
+            const isActive = activeTab === tabId;
+            return (
+                <button
+                    onClick={() => onClick(tabId)}
+                    className={`bottom-tab-button flex flex-col items-center gap-1 text-white/70 hover:text-white w-full p-1 transition-all duration-200 ${isActive ? 'bottom-nav-active' : ''}`}
+                >
+                    <Icon name={icon} className="w-6 h-6" />
+                    <span className="text-xs">{label}</span>
+                </button>
+            );
+        };
+
+        const BottomNav = ({ activeTab, onTabChange }) => {
+            const navItems = [
+                { tabId: 'player', icon: 'radio', label: 'الإذاعة' },
+                { tabId: 'links', icon: 'user-plus', label: 'تابعنا' },
+                { tabId: 'more', icon: 'more-horizontal', label: 'المزيد' },
+            ];
+
+            return (
+                <nav 
+                    className="fixed bottom-0 inset-x-0 flex justify-around p-2 z-50 shadow-t-lg"
+                    style={{ backgroundImage: 'linear-gradient(to right, var(--accent-secondary), var(--accent-primary))' }}
+                >
+                    {navItems.map(item => (
+                        <NavButton
+                            key={item.tabId}
+                            tabId={item.tabId}
+                            icon={item.icon}
+                            label={item.label}
+                            activeTab={activeTab}
+                            onClick={onTabChange}
+                        />
+                    ))}
+                </nav>
+            );
+        };
+        
+        // BrandIcons SVG Store
+        const BrandIcons = ({ name, size = 28 }) => {
+            const icons = {
+                facebook: (
+                    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="white">
+                        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                    </svg>
+                ),
+                telegram: (
+                     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="white">
+                        <path d="m9.417 15.181-.397 5.584c.568 0 .814-.244 1.109-.537l2.663-2.545 5.518 4.041c1.012.564 1.725.267 1.998-.931L23.456 6.35c.272-1.34-1.002-1.84-2.103-1.285L2.943 9.423c-1.334.524-1.328 1.25.221 1.564l5.24 1.622 12.33-7.864c.574-.35.983-.16.523.238L9.417 15.181z"/>
+                    </svg>
+                ),
+                instagram: (
+                    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                ),
+                youtube: (
+                    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="white">
+                        <path d="M21.582 7.042c-.225-1.543-1.63-2.77-3.172-2.995C16.29 3.8 12 3.8 12 3.8s-4.29 0-6.41.247c-1.542.225-2.947 1.452-3.172 2.995C2.175 8.585 2.175 12 2.175 12s0 3.415.243 4.958c.225 1.543 1.63 2.77 3.172 2.995C7.71 20.2 12 20.2 12 20.2s4.29 0 6.41-.247c1.542-.225 2.947-1.452 3.172-2.995C21.825 15.415 21.825 12 21.825 12s0-3.415-.243-4.958zM9.91 14.86V9.14L15.21 12l-5.3 2.86z"/>
+                    </svg>
+                )
+            };
+            return icons[name] || null;
+        };
+
+
+        // --- Tabs ---
+
+        // PlayerTab.tsx
+        const PlayerTab = () => {
+            const audioRef = useRef(null);
+            const [isPlaying, setIsPlaying] = useState(false);
+            const [isLoading, setIsLoading] = useState(false);
+
+            useEffect(() => {
+                // Initialize Audio element
+                audioRef.current = new Audio(STREAM_URL);
+                audioRef.current.preload = 'none';
+                
+                // Add event listeners for loading states
+                const audio = audioRef.current;
+                const onCanPlay = () => setIsLoading(false);
+                const onWaiting = () => setIsLoading(true);
+                const onPlaying = () => setIsLoading(false);
+
+                audio.addEventListener('canplay', onCanPlay);
+                audio.addEventListener('waiting', onWaiting);
+                audio.addEventListener('playing', onPlaying);
+
+                // Cleanup on component unmount
+                return () => {
+                    if (audio) {
+                        audio.pause();
+                        audio.removeEventListener('canplay', onCanPlay);
+                        audio.removeEventListener('waiting', onWaiting);
+                        audio.removeEventListener('playing', onPlaying);
+                        audio.src = ""; // Release resource
+                        audioRef.current = null;
+                    }
+                };
+            }, []);
+
+            const togglePlayPause = () => {
+                const audio = audioRef.current;
+                if (!audio) return;
+
+                if (isPlaying) {
+                    audio.pause();
+                    setIsPlaying(false);
+                } else {
+                    setIsLoading(true);
+                    audio.load();
+                    audio.play().then(() => {
+                        setIsPlaying(true);
+                    }).catch(e => {
+                        console.error("Audio play failed:", e);
+                        setIsLoading(false);
+                        setIsPlaying(false);
+                    });
+                }
+            };
+
+            const playPauseStyle = {
+                backgroundColor: isPlaying ? 'var(--accent-secondary)' : 'var(--accent-primary)',
+                color: 'white'
+            };
+
+            return (
+                <div className="flex flex-col items-center justify-center min-h-[70vh] text-center p-4">
+                    <div className="content-card p-8 rounded-lg shadow-xl w-full max-w-sm">
+                        <img 
+                            src="https://i.postimg.cc/7Y9f8FCC/Chat-GPT-Image-Oct-21-2025-05-47-16-PM.png" 
+                            alt="Logo" 
+                            className={`w-32 h-32 mx-auto mb-6 rounded-full ${isPlaying ? 'animate-pulse' : ''}`}
+                        />
+                        <h2 className="page-title text-2xl sm:text-3xl font-bold mb-4">
+                            إذاعة القرآن الكريم
+                        </h2>
+                        <p className="text-gray-600 mb-8 h-6">
+                            {isLoading ? "جاري التحميل..." : (isPlaying ? "يعمل الآن" : "متوقف")}
+                        </p>
+                        
+                        <button
+                            onClick={togglePlayPause}
+                            style={playPauseStyle}
+                            className="w-24 h-24 rounded-full flex items-center justify-center mx-auto transition-all duration-300 hover:opacity-90 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-[--accent-primary]/50 dark:focus:ring-[--accent-secondary]/50"
+                            aria-label={isPlaying ? 'Pause' : 'Play'}
+                        >
+                            {isLoading ? (
+                                <Icon name="loader-2" className="w-12 h-12 animate-spin" />
+                            ) : isPlaying ? (
+                                <Icon name="pause" className="w-12 h-12 fill-current" />
+                            ) : (
+                                <Icon name="play" className="w-12 h-12 fill-current ml-2" />
+                            )}
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // LinksTab.tsx
+        const LinksTab = () => {
+            const links = [
+                { name: 'الموقع الرسمي', url: 'https://www.maspero.eg/', icon: 'globe', color: '#6b7280' },
+                { name: 'Facebook', url: 'https://www.facebook.com/quran.ertu/?locale=ar_AR', icon: 'facebook', color: '#1877F2' },
+                { name: 'Telegram', url: 'https://t.me/Quran_Station', icon: 'telegram', color: '#2AABEE' },
+                { name: 'Instagram', url: 'https://www.instagram.com/qurankarimofficial?fbclid=IwY2xjawNke9ZleHRuA2FlbQIxMABicmlkETFSYkViQXpBZEJxRmhWVzlyAR7TqgJLwUKVv0VgIed_QKhM3-LlZ2A5NsiJJ1hXyRh56dDy12tBPncaOf82Eg_aem_7_EC1kfbqD6RXVjPjFk2sw&brid=J04dj4iG_jMHosy5cxzbbw', icon: 'instagram', color: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)' },
+                { name: 'Youtube', url: 'https://www.youtube.com/@QuranradioCairo', icon: 'youtube', color: '#FF0000' }
+            ];
+
+            return (
+                <div className="space-y-6 max-w-lg mx-auto">
+                    <h2 className="page-title text-2xl sm:text-3xl font-bold text-center mt-4">تابعنا</h2>
+                    <div className="space-y-4">
+                        {links.map(link => (
+                            <a
+                                key={link.name}
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="content-card flex items-center gap-4 p-3 rounded-lg shadow-md w-full text-right"
+                            >
+                                <div
+                                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                                    style={{ background: link.color }}
+                                >
+                                    {link.icon === 'globe' ? (
+                                        <Icon name="globe" className="w-7 h-7" style={{ color: 'white' }} />
+                                    ) : (
+                                        <BrandIcons name={link.icon} size={28} />
+                                    )}
+                                </div>
+                                <span className="text-lg font-semibold flex-grow">{link.name}</span>
+                                <Icon name="external-link" className="w-5 h-5 text-gray-400" />
+                            </a>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+        
+        // MoreTab.tsx
+        const MoreTab = () => {
+            const appLink = "https://mahmoudtaru.github.io/holyquranradio/";
+            const [copySuccess, setCopySuccess] = useState('');
+
+             const handleShare = async () => {
+                const shareData = {
+                    title: 'إذاعة القرآن الكريم',
+                    text: `استمع إلى إذاعة القرآن الكريم من القاهرة مباشرة عبر هذا التطبيق الرائع: ${appLink}`,
+                    url: appLink
+                };
+                try {
+                    if (navigator.share) {
+                        await navigator.share(shareData);
+                    } else {
+                        alert('خاصية المشاركة غير مدعومة في هذا المتصفح.');
+                    }
+                } catch (err) {
+                    console.error('Error sharing:', err);
+                }
+            };
+
+            const handleCopy = () => {
+                // This function uses a deprecated command but is more reliable in secure contexts like iframes
+                const textArea = document.createElement("textarea");
+                textArea.value = appLink;
+                textArea.style.position="fixed"; //avoid scrolling to bottom
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    setCopySuccess('تم النسخ بنجاح!');
+                } catch (err) {
+                    console.error('Fallback: Oops, unable to copy', err);
+                    setCopySuccess('فشل النسخ!');
+                }
+                document.body.removeChild(textArea);
+                setTimeout(() => setCopySuccess(''), 2000); // Hide message after 2 seconds
+            };
+
+
+            return (
+                 <div className="space-y-6 max-w-lg mx-auto">
+                    <h2 className="page-title text-2xl sm:text-3xl font-bold text-center mt-4">المزيد</h2>
+                    
+                    {/* Install Card - First */}
+                    <div className="content-card p-5 rounded-lg shadow-md">
+                        <h3 className="section-header text-lg font-bold mb-3 flex items-center gap-2">
+                           <Icon name="smartphone" />
+                           <span>طريقة تثبيت التطبيق</span>
+                        </h3>
+                        <ol className="list-decimal list-inside space-y-2 text-gray-700">
+                            <li>اضغط على الثلاث نقاط في المتصفح من أعلى.</li>
+                            <li>اختر "إضافة إلى الشاشة الرئيسية" أو "Add to Home Screen".</li>
+                            <li>أدخل اسم التطبيق ثم اضغط "إضافة" أو "Add".</li>
+                        </ol>
+                    </div>
+
+                    {/* Share Card - Second */}
+                    <div className="content-card p-5 rounded-lg shadow-md text-center">
+                        <h3 className="section-header text-lg font-bold mb-3 flex items-center justify-center gap-2">
+                           <Icon name="share-2" />
+                           <span>شاركه لمضاعفة الثواب</span>
+                        </h3>
+                        <p className="mb-2 text-sm text-gray-600">"الدال على الخير كفاعله"</p>
+                        <div className="p-2 rounded-lg bg-gray-100 text-sm break-words mb-4 text-center" dir="ltr">
+                            {appLink}
+                        </div>
+                        <div className="flex gap-2 justify-center">
+                            <button 
+                                onClick={handleCopy}
+                                className="flex-1 font-bold py-2 px-4 rounded-lg text-white transition-colors"
+                                style={{ backgroundColor: 'var(--accent-primary)' }}
+                            >
+                                {copySuccess ? copySuccess : 'نسخ الرابط'}
+                            </button>
+                            <button 
+                                onClick={handleShare}
+                                className="flex-1 font-bold py-2 px-4 rounded-lg text-white transition-colors"
+                                style={{ backgroundColor: 'var(--accent-secondary)' }}
+                            >
+                                مشاركة التطبيق
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Duaa Card - Third */}
+                    <div className="content-card p-5 rounded-lg shadow-md text-center">
+                        <Icon name="heart" className="w-10 h-10 mx-auto text-[--accent-secondary] fill-current" />
+                        <p className="mt-2 text-lg font-semibold">لا تنسانا من خالص دعائك</p>
+                    </div>
+                </div>
+            );
+        }
+
+
+        // App.tsx
+        const App = () => {
+            const [theme, setTheme] = useState('light');
+            const [activeTab, setActiveTab] = useState('player'); // Start on player tab
+
+            useEffect(() => {
+                const storedTheme = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const initialTheme = storedTheme === 'dark' || (!storedTheme && prefersDark) ? 'dark' : 'light';
+                setTheme(initialTheme);
+            }, []);
+
+            useEffect(() => {
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+                localStorage.setItem('theme', theme);
+            }, [theme]);
+            
+            useEffect(() => {
+                if (window.lucide) {
+                    const timeoutId = setTimeout(() => window.lucide.createIcons(), 0);
+                    return () => clearTimeout(timeoutId);
+                }
+            }, [activeTab]);
+
+            const handleThemeToggle = () => {
+                setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+            };
+
+            const handleTabChange = useCallback((tabId) => {
+                setActiveTab(tabId);
+                window.scrollTo(0, 0);
+            }, []);
+
+            const renderContent = () => {
+                switch (activeTab) {
+                    case 'player': return <PlayerTab />;
+                    case 'links': return <LinksTab />;
+                    case 'more': return <MoreTab />;
+                    default: return <PlayerTab />;
+                }
+            };
+
+            return (
+                <div id="app-content">
+                    <Header theme={theme} onThemeToggle={handleThemeToggle} />
+                    <main className="container mx-auto p-4 md:p-8 pb-24">
+                        <div className="tab-content-anim">
+                            {renderContent()}
+                        </div>
+                    </main>
+                    <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+                </div>
+            );
+        };
+
+        // Rendering logic
+        const rootElement = document.getElementById('root');
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(
+            <App />
+        );
+    </script>
+    <script>
+        // Welcome Screen Logic
+        function setupWelcomeScreen() {
+            const welcomeScreen = document.getElementById('welcome-screen');
+            const appContent = document.getElementById('root');
+            const startBtn = document.getElementById('start-btn');
+            const titleEl = document.getElementById('welcome-title');
+            const subtitleEl = document.getElementById('welcome-subtitle');
+            
+            // New Texts
+            const titleText = "إذاعة القرآن الكريم";
+            const subtitleText = "من القاهرة";
+
+            function applyTypewriter(element, text, speed, direction, callback) {
+                let i = 0; element.innerHTML = "";
+                element.classList.add('typewriter-anim', (direction === 'ltr' ? 'typewriter-ltr' : 'typewriter-rtl'));
+                function type() {
+                    if (i < text.length) { element.innerHTML += text.charAt(i); i++; setTimeout(type, speed); } 
+                    else { setTimeout(() => {
+                        element.classList.remove('typewriter-anim', 'typewriter-ltr', 'typewriter-rtl');
+                        element.style.borderRight = 'none'; element.style.borderLeft = 'none';
+                        if (callback) callback();
+                    }, 500); }
+                }
+                type();
+            }
+
+            setTimeout(() => {
+                applyTypewriter(titleEl, titleText, 100, 'rtl', () => { // Changed to RTL
+                    setTimeout(() => {
+                        applyTypewriter(subtitleEl, subtitleText, 75, 'rtl', () => {
+                            setTimeout(() => {
+                                startBtn.classList.remove('opacity-0');
+                                startBtn.classList.add('animate-fadeInUp', 'pulse-animate');
+                            }, 500);
+                        });
+                    }, 300);
+                });
+            }, 1500); // Start after logo fade-in
+
+            startBtn.addEventListener('click', () => {
+                welcomeScreen.classList.add('opacity-0');
+                setTimeout(() => {
+                    welcomeScreen.style.display = 'none';
+                    if (appContent) {
+                       appContent.classList.remove('hidden'); 
+                    }
+                }, 700);
+            });
+        }
+
+        // Initialize the welcome screen logic
+        document.addEventListener('DOMContentLoaded', () => {
+            setupWelcomeScreen();
+        });
+    </script>
+</body>
+</html>
+
