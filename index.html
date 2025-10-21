@@ -111,10 +111,20 @@
         }
 
         .page-title {
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            display: inline-block;
+            font-size: 1.5rem; /* 2xl */
+            font-weight: 700; /* bold */
+            margin-top: 1rem;
             color: var(--accent-primary);
+            background-color: rgba(255, 255, 255, 0.6);
+            border: 1px solid var(--accent-primary);
         }
-        .dark .page-title, .dark .content-card .page-title {
-            color: var(--accent-primary);
+        .dark .page-title {
+            color: var(--text-light);
+            background-color: var(--primary-dark);
+            border: 1px solid var(--accent-secondary);
         }
 
         .section-header {
@@ -137,10 +147,10 @@
     <div id="welcome-screen" class="fixed inset-0 flex flex-col justify-center items-center z-50 transition-opacity duration-700" style="background-color: var(--sm-blue);">
         <div class="w-full flex flex-col items-center text-center p-4">
             <img 
+                id="welcome-logo"
                 src="https://i.postimg.cc/7Y9f8FCC/Chat-GPT-Image-Oct-21-2025-05-47-16-PM.png" 
                 alt="شعار إذاعة القرآن الكريم" 
-                class="w-40 h-40 mx-auto mb-6 animate-fadeIn rounded-full" 
-                style="animation-delay: 0.5s;"
+                class="w-40 h-40 mx-auto mb-6 opacity-0 rounded-full"
             >
             <h1 id="welcome-title" dir="rtl" class="text-4xl sm:text-5xl font-bold mb-4 min-h-[56px] sm:min-h-[60px]" style="color: var(--sm-cream);"></h1>
             <p id="welcome-subtitle" class="text-lg sm:text-xl mt-2 min-h-[40px] sm:min-h-[44px]" style="color: var(--sm-green);"></p>
@@ -250,7 +260,7 @@
                     </svg>
                 ),
                 telegram: (
-                     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="white">
+                    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="white">
                         <path d="m9.417 15.181-.397 5.584c.568 0 .814-.244 1.109-.537l2.663-2.545 5.518 4.041c1.012.564 1.725.267 1.998-.931L23.456 6.35c.272-1.34-1.002-1.84-2.103-1.285L2.943 9.423c-1.334.524-1.328 1.25.221 1.564l5.24 1.622 12.33-7.864c.574-.35.983-.16.523.238L9.417 15.181z"/>
                     </svg>
                 ),
@@ -274,59 +284,7 @@
         // --- Tabs ---
 
         // PlayerTab.tsx
-        const PlayerTab = () => {
-            const audioRef = useRef(null);
-            const [isPlaying, setIsPlaying] = useState(false);
-            const [isLoading, setIsLoading] = useState(false);
-
-            useEffect(() => {
-                // Initialize Audio element
-                audioRef.current = new Audio(STREAM_URL);
-                audioRef.current.preload = 'none';
-                
-                // Add event listeners for loading states
-                const audio = audioRef.current;
-                const onCanPlay = () => setIsLoading(false);
-                const onWaiting = () => setIsLoading(true);
-                const onPlaying = () => setIsLoading(false);
-
-                audio.addEventListener('canplay', onCanPlay);
-                audio.addEventListener('waiting', onWaiting);
-                audio.addEventListener('playing', onPlaying);
-
-                // Cleanup on component unmount
-                return () => {
-                    if (audio) {
-                        audio.pause();
-                        audio.removeEventListener('canplay', onCanPlay);
-                        audio.removeEventListener('waiting', onWaiting);
-                        audio.removeEventListener('playing', onPlaying);
-                        audio.src = ""; // Release resource
-                        audioRef.current = null;
-                    }
-                };
-            }, []);
-
-            const togglePlayPause = () => {
-                const audio = audioRef.current;
-                if (!audio) return;
-
-                if (isPlaying) {
-                    audio.pause();
-                    setIsPlaying(false);
-                } else {
-                    setIsLoading(true);
-                    audio.load();
-                    audio.play().then(() => {
-                        setIsPlaying(true);
-                    }).catch(e => {
-                        console.error("Audio play failed:", e);
-                        setIsLoading(false);
-                        setIsPlaying(false);
-                    });
-                }
-            };
-
+        const PlayerTab = ({ isPlaying, isLoading, togglePlayPause }) => {
             const playPauseStyle = {
                 backgroundColor: isPlaying ? 'var(--accent-secondary)' : 'var(--accent-primary)',
                 color: 'white'
@@ -340,7 +298,7 @@
                             alt="Logo" 
                             className={`w-32 h-32 mx-auto mb-6 rounded-full ${isPlaying ? 'animate-pulse' : ''}`}
                         />
-                        <h2 className="page-title text-2xl sm:text-3xl font-bold mb-4">
+                        <h2 className="page-title !text-2xl !sm:text-3xl !mt-0 !border-none !bg-transparent !text-[--text-dark] !p-0">
                             إذاعة القرآن الكريم
                         </h2>
                         <p className="text-gray-600 mb-8 h-6">
@@ -377,8 +335,8 @@
             ];
 
             return (
-                <div className="space-y-6 max-w-lg mx-auto">
-                    <h2 className="page-title text-2xl sm:text-3xl font-bold text-center mt-4">تابعنا</h2>
+                <div className="space-y-6 max-w-lg mx-auto text-center">
+                    <h2 className="page-title">تابعنا</h2>
                     <div className="space-y-4">
                         {links.map(link => (
                             <a
@@ -450,14 +408,14 @@
 
 
             return (
-                 <div className="space-y-6 max-w-lg mx-auto">
-                    <h2 className="page-title text-2xl sm:text-3xl font-bold text-center mt-4">المزيد</h2>
+                 <div className="space-y-6 max-w-lg mx-auto text-center">
+                    <h2 className="page-title">المزيد</h2>
                     
                     {/* Install Card - First */}
-                    <div className="content-card p-5 rounded-lg shadow-md">
+                    <div className="content-card p-5 rounded-lg shadow-md text-right">
                         <h3 className="section-header text-lg font-bold mb-3 flex items-center gap-2">
                            <Icon name="smartphone" />
-                           <span>طريقة تثبيت التطبيق</span>
+                           <span>طريقة التثبيت علي الموبايل</span>
                         </h3>
                         <ol className="list-decimal list-inside space-y-2 text-gray-700">
                             <li>اضغط على الثلاث نقاط في المتصفح من أعلى.</li>
@@ -507,7 +465,57 @@
         // App.tsx
         const App = () => {
             const [theme, setTheme] = useState('light');
-            const [activeTab, setActiveTab] = useState('player'); // Start on player tab
+            const [activeTab, setActiveTab] = useState('player');
+            const audioRef = useRef(null);
+            const [isPlaying, setIsPlaying] = useState(false);
+            const [isLoading, setIsLoading] = useState(false);
+
+            // Initialize Audio Player once
+            useEffect(() => {
+                audioRef.current = new Audio(STREAM_URL);
+                audioRef.current.preload = 'none';
+                
+                const audio = audioRef.current;
+                const onCanPlay = () => setIsLoading(false);
+                const onWaiting = () => setIsLoading(true);
+                const onPlaying = () => setIsLoading(false);
+
+                audio.addEventListener('canplay', onCanPlay);
+                audio.addEventListener('waiting', onWaiting);
+                audio.addEventListener('playing', onPlaying);
+
+                return () => {
+                    if (audio) {
+                        audio.pause();
+                        audio.removeEventListener('canplay', onCanPlay);
+                        audio.removeEventListener('waiting', onWaiting);
+                        audio.removeEventListener('playing', onPlaying);
+                        audio.src = "";
+                        audioRef.current = null;
+                    }
+                };
+            }, []);
+
+            const togglePlayPause = () => {
+                const audio = audioRef.current;
+                if (!audio) return;
+
+                if (isPlaying) {
+                    audio.pause();
+                    setIsPlaying(false);
+                } else {
+                    setIsLoading(true);
+                    audio.load();
+                    audio.play().then(() => {
+                        setIsPlaying(true);
+                    }).catch(e => {
+                        console.error("Audio play failed:", e);
+                        setIsLoading(false);
+                        setIsPlaying(false);
+                    });
+                }
+            };
+
 
             useEffect(() => {
                 const storedTheme = localStorage.getItem('theme');
@@ -543,10 +551,10 @@
 
             const renderContent = () => {
                 switch (activeTab) {
-                    case 'player': return <PlayerTab />;
+                    case 'player': return <PlayerTab isPlaying={isPlaying} isLoading={isLoading} togglePlayPause={togglePlayPause} />;
                     case 'links': return <LinksTab />;
                     case 'more': return <MoreTab />;
-                    default: return <PlayerTab />;
+                    default: return <PlayerTab isPlaying={isPlaying} isLoading={isLoading} togglePlayPause={togglePlayPause} />;
                 }
             };
 
@@ -578,37 +586,44 @@
             const startBtn = document.getElementById('start-btn');
             const titleEl = document.getElementById('welcome-title');
             const subtitleEl = document.getElementById('welcome-subtitle');
+            const logoEl = document.getElementById('welcome-logo');
             
-            // New Texts
             const titleText = "إذاعة القرآن الكريم";
             const subtitleText = "من القاهرة";
 
             function applyTypewriter(element, text, speed, direction, callback) {
                 let i = 0; element.innerHTML = "";
-                element.classList.add('typewriter-anim', (direction === 'ltr' ? 'typewriter-ltr' : 'typewriter-rtl'));
+                element.classList.add('typewriter-anim', 'typewriter-rtl');
                 function type() {
-                    if (i < text.length) { element.innerHTML += text.charAt(i); i++; setTimeout(type, speed); } 
-                    else { setTimeout(() => {
-                        element.classList.remove('typewriter-anim', 'typewriter-ltr', 'typewriter-rtl');
-                        element.style.borderRight = 'none'; element.style.borderLeft = 'none';
-                        if (callback) callback();
-                    }, 500); }
+                    if (i < text.length) {
+                        element.innerHTML += text.charAt(i);
+                        i++;
+                        setTimeout(type, speed);
+                    } else {
+                        setTimeout(() => {
+                            element.classList.remove('typewriter-anim', 'typewriter-rtl');
+                            element.style.borderLeft = 'none';
+                            if (callback) callback();
+                        }, 200); // Shorter pause
+                    }
                 }
                 type();
             }
 
+            // Start animation sequence
             setTimeout(() => {
-                applyTypewriter(titleEl, titleText, 100, 'rtl', () => { // Changed to RTL
-                    setTimeout(() => {
+                logoEl.classList.add('animate-fadeInUp');
+                logoEl.classList.remove('opacity-0');
+
+                setTimeout(() => {
+                     applyTypewriter(titleEl, titleText, 100, 'rtl', () => {
                         applyTypewriter(subtitleEl, subtitleText, 75, 'rtl', () => {
-                            setTimeout(() => {
-                                startBtn.classList.remove('opacity-0');
-                                startBtn.classList.add('animate-fadeInUp', 'pulse-animate');
-                            }, 500);
+                            startBtn.classList.add('animate-fadeInUp', 'pulse-animate');
+                            startBtn.classList.remove('opacity-0');
                         });
-                    }, 300);
-                });
-            }, 1500); // Start after logo fade-in
+                    });
+                }, 400); // Start typing after logo is mostly visible
+            }, 200); // Initial delay
 
             startBtn.addEventListener('click', () => {
                 welcomeScreen.classList.add('opacity-0');
