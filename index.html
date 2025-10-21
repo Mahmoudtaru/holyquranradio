@@ -284,7 +284,7 @@
         // --- Tabs ---
 
         // PlayerTab.tsx
-        const PlayerTab = ({ isPlaying, isLoading, togglePlayPause }) => {
+        const PlayerTab = ({ isPlaying, isLoading, togglePlayPause, playbackError }) => {
             const playPauseStyle = {
                 backgroundColor: isPlaying ? 'var(--accent-secondary)' : 'var(--accent-primary)',
                 color: 'white'
@@ -301,9 +301,16 @@
                         <h2 className="page-title !text-2xl !sm:text-3xl !mt-0 !border-none !bg-transparent !text-[--text-dark] !p-0">
                             إذاعة القرآن الكريم
                         </h2>
-                        <p className="text-gray-600 mb-8 h-6">
-                            {isLoading ? "جاري التحميل..." : (isPlaying ? "يعمل الآن" : "متوقف")}
-                        </p>
+                        
+                        <div className="h-12 flex items-center justify-center mb-4">
+                            {playbackError ? (
+                                <p className="text-red-600 text-sm px-2">{playbackError}</p>
+                            ) : (
+                                <p className="text-gray-600">
+                                    {isLoading ? "جاري التحميل..." : (isPlaying ? "يعمل الآن" : "متوقف")}
+                                </p>
+                            )}
+                        </div>
                         
                         <button
                             onClick={togglePlayPause}
@@ -469,50 +476,51 @@
             const audioRef = useRef(null);
             const [isPlaying, setIsPlaying] = useState(false);
             const [isLoading, setIsLoading] = useState(false);
-
-            // Initialize Audio Player once
-            useEffect(() => {
-                audioRef.current = new Audio(STREAM_URL);
-                audioRef.current.preload = 'none';
-                
-                const audio = audioRef.current;
-                const onCanPlay = () => setIsLoading(false);
-                const onWaiting = () => setIsLoading(true);
-                const onPlaying = () => setIsLoading(false);
-
-                audio.addEventListener('canplay', onCanPlay);
-                audio.addEventListener('waiting', onWaiting);
-                audio.addEventListener('playing', onPlaying);
-
-                return () => {
-                    if (audio) {
-                        audio.pause();
-                        audio.removeEventListener('canplay', onCanPlay);
-                        audio.removeEventListener('waiting', onWaiting);
-                        audio.removeEventListener('playing', onPlaying);
-                        audio.src = "";
-                        audioRef.current = null;
-                    }
-                };
-            }, []);
+            const [playbackError, setPlaybackError] = useState(null);
 
             const togglePlayPause = () => {
-                const audio = audioRef.current;
-                if (!audio) return;
+                setPlaybackError(null); // Reset error on new attempt
 
-                if (isPlaying) {
-                    audio.pause();
-                    setIsPlaying(false);
-                } else {
-                    setIsLoading(true);
-                    audio.load();
-                    audio.play().then(() => {
+                if (!audioRef.current) {
+                    // First time ever clicking play: create and configure the audio element
+                    const audio = new Audio(STREAM_URL);
+                    audio.preload = 'auto';
+                    
+                    audio.addEventListener('playing', () => {
+                        setIsLoading(false);
                         setIsPlaying(true);
-                    }).catch(e => {
-                        console.error("Audio play failed:", e);
+                    });
+                    audio.addEventListener('pause', () => {
+                        setIsPlaying(false);
+                    });
+                     audio.addEventListener('waiting', () => {
+                        setIsLoading(true);
+                    });
+                    audio.addEventListener('error', (e) => {
+                        console.error("Audio playback error:", e);
+                        setPlaybackError("حدث خطأ في البث. يرجى المحاولة مرة أخرى.");
                         setIsLoading(false);
                         setIsPlaying(false);
                     });
+                    
+                    audioRef.current = audio;
+                }
+
+                const audio = audioRef.current;
+                
+                if (isPlaying) {
+                    audio.pause();
+                } else {
+                    setIsLoading(true);
+                    const playPromise = audio.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.error("Play was prevented:", error);
+                            setPlaybackError("لم يتمكن من التشغيل. انسخ رابط التطبيق وافتحه في متصفح خارجي مثل جوجل كروم.");
+                            setIsLoading(false);
+                            setIsPlaying(false);
+                        });
+                    }
                 }
             };
 
@@ -551,10 +559,10 @@
 
             const renderContent = () => {
                 switch (activeTab) {
-                    case 'player': return <PlayerTab isPlaying={isPlaying} isLoading={isLoading} togglePlayPause={togglePlayPause} />;
+                    case 'player': return <PlayerTab isPlaying={isPlaying} isLoading={isLoading} togglePlayPause={togglePlayPause} playbackError={playbackError} />;
                     case 'links': return <LinksTab />;
                     case 'more': return <MoreTab />;
-                    default: return <PlayerTab isPlaying={isPlaying} isLoading={isLoading} togglePlayPause={togglePlayPause} />;
+                    default: return <PlayerTab isPlaying={isPlaying} isLoading={isLoading} togglePlayPause={togglePlayPause} playbackError={playbackError} />;
                 }
             };
 
